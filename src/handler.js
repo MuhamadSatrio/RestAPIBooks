@@ -3,20 +3,23 @@ const books = require('./books');
 
 const menyimpanBuku = (request, h) => {
   const {
-    name, year, author, summary, publisher, pageCount, readPage, reading,
+    name, year, author, summary, publisher, pageCount, readPage,
+  } = request.payload;
+  let {
+    reading,
   } = request.payload;
 
   const id = nanoid(16);
-  const insertAt = new Date().toISOString;
-  const updatedAt = insertAt;
+  const insertedAt = new Date().toISOString;
+  const updatedAt = insertedAt;
   let finished = false;
-  // let reading = false;
+  reading = 0;
 
-  // if (readPage > 0 && readPage < pageCount) {
-  //   reading = true;
-  // }
   if (pageCount === readPage) {
     finished = true;
+  }
+  if (readPage > 0 && readPage <= pageCount) {
+    reading = 1;
   }
 
   const bukuBaru = {
@@ -30,7 +33,7 @@ const menyimpanBuku = (request, h) => {
     readPage,
     finished,
     reading,
-    insertAt,
+    insertedAt,
     updatedAt,
   };
 
@@ -87,9 +90,9 @@ const menampilkanAllBooks = () => ({
 });
 
 const ambilBukuId = (request, h) => {
-  const { id } = request.params;
+  const { bookId } = request.params;
 
-  const book = books.filter((n) => n.id === id)[0];
+  const book = books.filter((n) => n.id === bookId)[0];
 
   if (book !== undefined) {
     const response = h.response({
@@ -103,15 +106,15 @@ const ambilBukuId = (request, h) => {
   }
 
   const response = h.response({
-    status: 'success',
+    status: 'fail',
     message: 'Buku tidak ditemukan',
   });
-  response.code(400);
+  response.code(404);
   return response;
 };
 
 const editBooks = (request, h) => {
-  const { id } = request.params;
+  const { bookId } = request.params;
 
   const {
     name, year, author, summary, publisher, pageCount, readPage, reading,
@@ -119,7 +122,7 @@ const editBooks = (request, h) => {
 
   const updatedAt = new Date().toISOString();
 
-  const index = books.findIndex((book) => book.id === id);
+  const index = books.findIndex((book) => book.id === bookId);
 
   if (index !== -1) {
     books[index] = {
@@ -134,7 +137,7 @@ const editBooks = (request, h) => {
       reading,
       updatedAt,
     };
-    if (name.length < 0) {
+    if (!name) {
       const response = h.response({
         status: 'fail',
         message: 'Gagal memperbarui buku. Mohon isi nama buku',
@@ -167,9 +170,9 @@ const editBooks = (request, h) => {
 };
 
 const hapusBuku = (request, h) => {
-  const { id } = request.params;
+  const { bookId } = request.params;
 
-  const index = books.findIndex((book) => book.id === id);
+  const index = books.findIndex((book) => book.id === bookId);
 
   if (index !== -1) {
     books.splice(index, 1);
