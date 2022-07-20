@@ -1,0 +1,9 @@
+1. NPM init --y
+2. npm install nodemon --save-dev
+3. npm install eslint --save-dev
+4. npx eslint --init //konfigurasi
+5. set peckage.json agar nodemon dan lint berada di src
+6. npm install @hapi.hapi
+7. atur server dengan hapi port localhost, ke routes, books, handler
+
+ npm install nanoid@3.1.28 untuk id
