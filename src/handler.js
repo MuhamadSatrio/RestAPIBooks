@@ -3,24 +3,13 @@ const books = require('./books');
 
 const menyimpanBuku = (request, h) => {
   const {
-    name, year, author, summary, publisher, pageCount, readPage,
-  } = request.payload;
-  let {
-    reading,
+    name, year, author, summary, publisher, pageCount, readPage, reading,
   } = request.payload;
 
   const id = nanoid(16);
-  const insertedAt = new Date().toISOString;
+  const insertedAt = new Date().toISOString();
   const updatedAt = insertedAt;
-  let finished = false;
-  reading = 0;
-
-  if (pageCount === readPage) {
-    finished = true;
-  }
-  if (readPage > 0 && readPage <= pageCount) {
-    reading = 1;
-  }
+  const finished = readPage === pageCount;
 
   const bukuBaru = {
     id,
@@ -78,16 +67,85 @@ const menyimpanBuku = (request, h) => {
   return response;
 };
 
-const menampilkanAllBooks = () => ({
-  status: 'success',
-  data: {
-    books: books.map((book) => ({
-      id: book.id,
-      name: book.name,
-      publisher: book.publisher,
-    })),
-  },
-});
+const menampilkanAllBooks = (request, h) => {
+  const { finished, reading, name } = request.query;
+
+  if (name) {
+    const filter = books.filter((
+      book,
+    ) => book.name.toUpperCase().includes(name.toUpperCase()));
+    const response = h.response({
+      status: 'success',
+      data: {
+        books: filter.map((book) => ({
+          id: book.id,
+          name: book.name,
+          publisher: book.publisher,
+        })),
+      },
+    });
+    response.code(200);
+    return response;
+  }
+
+  if (finished === '0') {
+    const response = h.response({
+      status: 'success',
+      data: {
+        books: books.filter((book) => book.finished === false).map((book) => ({
+          id: book.id,
+          name: book.name,
+          publisher: book.publisher,
+        })),
+      },
+    });
+    response.code(200);
+    return response;
+  }
+
+  if (finished === '1') {
+    const response = h.response({
+      status: 'success',
+      data: {
+        books: books.filter((book) => book.finished === true).map((book) => ({
+          id: book.id,
+          name: book.name,
+          publisher: book.publisher,
+        })),
+      },
+    });
+    response.code(200);
+    return response;
+  }
+
+  if (reading) {
+    const response = h.response({
+      status: 'success',
+      data: {
+        books: books.filter((book) => book.reading === true).map((book) => ({
+          id: book.id,
+          name: book.name,
+          publisher: book.publisher,
+        })),
+      },
+    });
+    response.code(200);
+    return response;
+  }
+
+  const response = h.response({
+    status: 'success',
+    data: {
+      books: books.map((book) => ({
+        id: book.id,
+        name: book.name,
+        publisher: book.publisher,
+      })),
+    },
+  });
+  response.code(200);
+  return response;
+};
 
 const ambilBukuId = (request, h) => {
   const { bookId } = request.params;
